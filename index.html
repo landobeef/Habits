@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HabitPulse">
+  <link rel=manifest href=manifest.json>
+  <link rel=apple-touch-icon href=icon-192.png>
+
+  <meta name="theme-color" content="#0f172a">
+  <title>HabitPulse - Habit Tracker & Motivation</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --bg-card-hover: #334155;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-light: #818cf8;
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.15);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    input, textarea, button {
+      font-family: inherit;
+      user-select: auto;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-stack);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 90px;
+    }
+
+    /* Responsive container */
+    .app-container {
+      width: 100%;
+      max-width: 680px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Top App Header */
+    header.app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent), #ec4899);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-text span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      color: var(--text-main);
+      border-color: var(--accent-light);
+    }
+
+    /* Bottom Navigation for Mobile & PC */
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+
+    .nav-btn .nav-icon {
+      font-size: 20px;
+    }
+
+    .nav-btn.active {
+      color: var(--accent-light);
+    }
+
+    .nav-btn.active .nav-icon {
+      transform: translateY(-2px);
+    }
+
+    /* Views */
+    .view-section {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view-section.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Overview Page Hero Motivation */
+    .motivation-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .motivation-banner h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .motivation-banner p {
+      font-size: 14px;
+      color: #cbd5e1;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-light), var(--success));
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    /* Days Since Habit Cards */
+    .habits-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .habit-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .habit-card:hover {
+      border-color: var(--border-color);
+    }
+
+    .habit-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .habit-name {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .habit-days-since {
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-today {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .habit-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Data Input View */
+    .input-form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .add-habit-bar {
+      display: flex;
+      gap: 10px;
+    }
+
+    .text-input {
+      flex: 1;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s ease, transform 0.1s ease;
+      white-space: nowrap;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .primary-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Date Selector for Logging */
+    .date-navigator {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+    }
+
+    .date-display {
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .date-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Interactive Habit Buttons */
+    .habit-buttons-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .tap-habit-btn {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      color: var(--text-main);
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tap-habit-btn:hover {
+      border-color: var(--accent-light);
+      background: var(--bg-card-hover);
+    }
+
+    .tap-habit-btn.completed {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.1));
+      border-color: var(--success);
+      color: #fff;
+    }
+
+    .tap-habit-btn .status-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      transition: all 0.2s ease;
+    }
+
+    .tap-habit-btn.completed .status-icon {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+    .tap-habit-btn .counter-pill {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .tap-habit-btn.completed .counter-pill {
+      background: rgba(16, 185, 129, 0.3);
+      color: var(--success);
+    }
+
+    /* Admin / Calendar Views */
+    .admin-subnav {
+      display: flex;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      gap: 4px;
+      border: 1px solid var(--border-color);
+    }
+
+    .subnav-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .subnav-btn.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4);
+    }
+
+    .calendar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Day View Details */
+    .day-item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .day-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+    }
+
+    .day-item.done {
+      border-left: 4px solid var(--success);
+    }
+
+    .day-item.missed {
+      border-left: 4px solid var(--border-color);
+      opacity: 0.7;
+    }
+
+    /* Week View Grid */
+    .week-table-wrapper {
+      overflow-x: auto;
+      margin-top: 8px;
+    }
+
+    table.week-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    table.week-table th {
+      color: var(--text-muted);
+      font-weight: 600;
+      padding: 8px 4px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    table.week-table th.today-col {
+      color: var(--accent-light);
+    }
+
+    table.week-table td {
+      padding: 12px 6px;
+      border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    }
+
+    table.week-table td.habit-name-col {
+      text-align: left;
+      font-weight: 600;
+      color: var(--text-main);
+      max-width: 130px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .week-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--success);
+      color: white;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .week-dash {
+      color: var(--border-color);
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* Month View Calendar */
+    .month-calendar-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .month-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .month-day-cell {
+      aspect-ratio: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .month-day-cell:hover {
+      border-color: var(--accent-light);
+      background: var(--bg-card-hover);
+    }
+
+    .month-day-cell.other-month {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    .month-day-cell.is-today {
+      border: 2px solid var(--accent-light);
+    }
+
+    .month-day-cell.has-completions {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .month-day-cell.all-completed {
+      background: rgba(16, 185, 129, 0.35);
+      border-color: var(--success);
+    }
+
+    .day-dots-container {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 100%;
+    }
+
+    .day-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Settings & Backup Modal */
+    .settings-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .secondary-btn {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .secondary-btn:hover {
+      border-color: var(--text-muted);
+      background: var(--bg-card-hover);
+    }
+
+    .danger-btn {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .danger-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      opacity: 0.6;
+    }
+
+    /* Modal dialog */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>HabitPulse</h1>
+          <span id="currentDateSubtitle">Loading date...</span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="openSettingsBtn" title="Settings & Backup">⚙️</button>
+      </div>
+    </header>
+
+    <!-- View 1: Overview / "Days Since" Motivation -->
+    <section id="overviewView" class="view-section active">
+      <!-- Motivation Banner -->
+      <div class="motivation-banner">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <h2>Today's Momentum</h2>
+          <span id="momentumRate" style="font-weight: 700; color: var(--success);">0%</span>
+        </div>
+        <p id="momentumText">You have 0 habits scheduled today.</p>
+        <div class="progress-bar-container">
+          <div id="momentumProgress" class="progress-bar-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Days Since List -->
+      <div class="card">
+        <div class="card-title">
+          <span>Habit Streaks & "Days Since"</span>
+          <span id="habitCountBadge" class="badge badge-today">0 Habits</span>
+        </div>
+
+        <div id="daysSinceList" class="habits-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- View 2: Data Input View -->
+    <section id="inputView" class="view-section">
+      <!-- Date switcher for logging (Today / Yesterday) -->
+      <div class="date-navigator">
+        <button class="icon-btn" id="prevLogDateBtn" title="Previous Day">‹</button>
+        <div>
+          <div class="date-display" id="logDateLabel">Today</div>
+          <div class="date-subtext" id="logDateSubtext">Oct 5, 2026</div>
+        </div>
+        <button class="icon-btn" id="nextLogDateBtn" title="Next Day">›</button>
+      </div>
+
+      <!-- Add New Habit Box -->
+      <div class="input-form-card">
+        <div class="card-title" style="margin-bottom: 4px;">Add a New Habit</div>
+        <form id="addHabitForm" class="add-habit-bar" onsubmit="event.preventDefault(); handleAddHabit();">
+          <input type="text" id="habitInput" class="text-input" placeholder="e.g. Exercise, Meditate, Read 20 mins..." autocomplete="off">
+          <button type="submit" class="primary-btn">+ Add</button>
+        </form>
+      </div>
+
+      <!-- Tap to Log Habits Section -->
+      <div class="card">
+        <div class="card-title">
+          <span>Tap to Log for This Date</span>
+          <span style="font-size: 12px; color: var(--text-muted);">Tap again to uncheck</span>
+        </div>
+
+        <div id="habitTapButtons" class="habit-buttons-grid">
+          <!-- Dynamically populated buttons -->
+        </div>
+      </div>
+    </section>
+
+    <!-- View 3: Admin / Calendar View -->
+    <section id="adminView" class="view-section">
+      <!-- Subnav: Day | Week | Month -->
+      <div class="admin-subnav">
+        <button class="subnav-btn active" id="subnavDayBtn" onclick="switchAdminSubView('day')">Day</button>
+        <button class="subnav-btn" id="subnavWeekBtn" onclick="switchAdminSubView('week')">Week</button>
+        <button class="subnav-btn" id="subnavMonthBtn" onclick="switchAdminSubView('month')">Month</button>
+      </div>
+
+      <!-- Day Sub-View -->
+      <div id="adminDayView" class="calendar-container">
+        <div class="date-navigator">
+          <button class="icon-btn" onclick="shiftAdminDay(-1)">‹</button>
+          <div style="text-align: center;">
+            <div class="date-display" id="adminDayTitle">October 5, 2026</div>
+            <div class="date-subtext" id="adminDaySummary">0/0 completed</div>
+          </div>
+          <button class="icon-btn" onclick="shiftAdminDay(1)">›</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Day Breakdown</div>
+          <div id="adminDayList" class="day-item-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Week Sub-View -->
+      <div id="adminWeekView" class="calendar-container" style="display: none;">
+        <div class="date-navigator">
+          <button class="icon-btn" onclick="shiftAdminWeek(-1)">‹</button>
+          <div style="text-align: center;">
+            <div class="date-display" id="adminWeekTitle">Oct 5 - Oct 11, 2026</div>
+            <div class="date-subtext">Weekly Breakdown</div>
+          </div>
+          <button class="icon-btn" onclick="shiftAdminWeek(1)">›</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Weekly Habit Matrix</div>
+          <div class="week-table-wrapper">
+            <table class="week-table" id="adminWeekTable">
+              <!-- Dynamically populated -->
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Month Sub-View -->
+      <div id="adminMonthView" class="calendar-container" style="display: none;">
+        <div class="date-navigator">
+          <button class="icon-btn" onclick="shiftAdminMonth(-1)">‹</button>
+          <div style="text-align: center;">
+            <div class="date-display" id="adminMonthTitle">October 2026</div>
+            <div class="date-subtext">Monthly Consistency Overview</div>
+          </div>
+          <button class="icon-btn" onclick="shiftAdminMonth(1)">›</button>
+        </div>
+
+        <div class="card">
+          <div class="month-calendar-header">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div class="month-calendar-grid" id="adminMonthGrid">
+            <!-- Dynamically populated calendar cells -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="tabOverview" onclick="switchMainTab('overview')">
+      <span class="nav-icon">📊</span>
+      <span>Overview</span>
+    </button>
+    <button class="nav-btn" id="tabInput" onclick="switchMainTab('input')">
+      <span class="nav-icon">✍️</span>
+      <span>Log Habit</span>
+    </button>
+    <button class="nav-btn" id="tabAdmin" onclick="switchMainTab('admin')">
+      <span class="nav-icon">📅</span>
+      <span>Calendar</span>
+    </button>
+  </nav>
+
+  <!-- Settings / Backup Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Settings & Data Backup</h3>
+        <button class="close-btn" onclick="closeSettingsModal()">✕</button>
+      </div>
+
+      <div class="settings-group">
+        <p style="font-size: 13px; color: var(--text-muted);">
+          Your habits are automatically saved directly in your browser's local storage. Use the export/import options to easily transfer data between your PC and phone.
+        </p>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Export Backup</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Save habits & history as JSON file</div>
+          </div>
+          <button class="secondary-btn" onclick="exportData()">⬇️ Export</button>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Import Backup</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Load JSON file from device</div>
+          </div>
+          <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+          <button class="secondary-btn" onclick="document.getElementById('importFileInput').click()">⬆️ Import</button>
+        </div>
+
+        <div class="settings-row">
+          <div>
+            <div style="font-weight: 600; font-size: 14px;">Demo Sample Data</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Load example habits and history</div>
+          </div>
+          <button class="secondary-btn" onclick="loadSampleData()">✨ Load Demo</button>
+        </div>
+
+        <div class="settings-row" style="border-bottom: none;">
+          <div>
+            <div style="font-weight: 600; font-size: 14px; color: var(--danger);">Reset All Data</div>
+            <div style="font-size: 12px; color: var(--text-muted);">Clear all habits and logged records</div>
+          </div>
+          <button class="secondary-btn danger-btn" onclick="clearAllData()">🗑️ Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================================
+       HABIT TRACKER APPLICATION STATE & LOGIC
+       ========================================================= */
+
+    const STORAGE_KEY = 'habitpulse_data_v1';
+
+    // State structure
+    let appState = {
+      habits: [], // Array of { id, name, createdAt }
+      // logs: { "YYYY-MM-DD": { "habit_id": count } }
+      logs: {}
+    };
+
+    // Active views and date selectors
+    let currentLogDate = getLocalDateString(new Date());
+    let adminDayDate = getLocalDateString(new Date());
+    let adminWeekStartDate = getMondayOfWeek(new Date());
+    let adminMonthDate = new Date(); // tracks year and month for calendar
+
+    // Helper: Formats Date object to YYYY-MM-DD in local time
+    function getLocalDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Helper: Parse YYYY-MM-DD into Date object
+    function parseDateString(str) {
+      const [year, month, day] = str.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    // Helper: Get Monday of the given week
+    function getMondayOfWeek(d) {
+      const date = new Date(d);
+      const day = date.getDay();
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+      return new Date(date.setDate(diff));
+    }
+
+    // Persistence
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.habits)) {
+            appState = parsed;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load state from localStorage', err);
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (err) {
+        console.error('Failed to save state to localStorage', err);
+      }
+    }
+
+    // Initialization
+    
+    // Service Worker Registration for Installable PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(() => {
+          console.log('HabitPulse Service Worker Registered');
+        }).catch((err) => {
+          console.log('SW registration skipped or unsupported in current context:', err);
+        });
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      updateHeaderDate();
+      renderAllViews();
+      setupDateSelectors();
+    });
+
+    function updateHeaderDate() {
+      const today = new Date();
+      const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+      document.getElementById('currentDateSubtitle').textContent = today.toLocaleDateString(undefined, options);
+    }
+
+    function renderAllViews() {
+      renderOverviewView();
+      renderInputView();
+      renderAdminView();
+    }
+
+    /* =========================================================
+       VIEW 1: OVERVIEW ("DAYS SINCE" & MOTIVATION)
+       ========================================================= */
+
+    function renderOverviewView() {
+      const todayStr = getLocalDateString(new Date());
+      const container = document.getElementById('daysSinceList');
+      const habitCountBadge = document.getElementById('habitCountBadge');
+      const momentumRate = document.getElementById('momentumRate');
+      const momentumText = document.getElementById('momentumText');
+      const momentumProgress = document.getElementById('momentumProgress');
+
+      habitCountBadge.textContent = `${appState.habits.length} Habit${appState.habits.length === 1 ? '' : 's'}`;
+
+      if (appState.habits.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">🌱</div>
+            <h3>No Habits Added Yet</h3>
+            <p>Go to the <strong>Log Habit</strong> tab to add your first habit!</p>
+            <button class="primary-btn" onclick="switchMainTab('input')" style="margin-top: 8px;">+ Add Your First Habit</button>
+          </div>
+        `;
+        momentumRate.textContent = '0%';
+        momentumText.textContent = 'Add your first habit to begin tracking your momentum.';
+        momentumProgress.style.width = '0%';
+        return;
+      }
+
+      // Calculate today's completed count
+      const todayLogs = appState.logs[todayStr] || {};
+      let completedTodayCount = 0;
+      appState.habits.forEach(h => {
+        if ((todayLogs[h.id] || 0) > 0) completedTodayCount++;
+      });
+
+      const percentage = Math.round((completedTodayCount / appState.habits.length) * 100);
+      momentumRate.textContent = `${percentage}%`;
+      momentumProgress.style.width = `${percentage}%`;
+      momentumText.textContent = `${completedTodayCount} of ${appState.habits.length} habits completed today.`;
+
+      // Render each habit's "Days Since" card
+      container.innerHTML = '';
+      appState.habits.forEach(habit => {
+        const stats = calculateHabitStats(habit.id);
+        const card = document.createElement('div');
+        card.className = 'habit-card';
+
+        let badgeHtml = '';
+        if (stats.daysSince === 0) {
+          badgeHtml = `<span class="badge badge-today">✓ Done Today! (0 days ago)</span>`;
+        } else if (stats.daysSince === 1) {
+          badgeHtml = `<span class="badge badge-warning">1 day ago</span>`;
+        } else if (stats.daysSince !== null) {
+          badgeHtml = `<span class="badge badge-danger">${stats.daysSince} days ago</span>`;
+        } else {
+          badgeHtml = `<span class="badge" style="background: rgba(148, 163, 184, 0.15); color: #94a3b8;">Never completed</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="habit-info">
+            <div class="habit-name">${escapeHtml(habit.name)}</div>
+            <div class="habit-days-since">
+              days since you last ${escapeHtml(habit.name.toLowerCase())}: 
+              <strong>${stats.daysSince !== null ? stats.daysSince : 'N/A'}</strong>
+              ${badgeHtml}
+            </div>
+            <div class="habit-meta">
+              🔥 Current streak: <strong>${stats.currentStreak} day${stats.currentStreak === 1 ? '' : 's'}</strong> &nbsp;|&nbsp; 
+              🏆 Total completed: <strong>${stats.totalCompletions} time${stats.totalCompletions === 1 ? '' : 's'}</strong>
+            </div>
+          </div>
+          <div>
+            ${stats.daysSince === 0 ? 
+              `<button class="icon-btn" style="border-color: var(--success); color: var(--success);" title="Completed today!">✓</button>` :
+              `<button class="primary-btn" style="padding: 8px 14px; font-size: 13px;" onclick="quickLogHabit('${habit.id}')">+ Log</button>`
+            }
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function calculateHabitStats(habitId) {
+      const todayStr = getLocalDateString(new Date());
+      const allDates = Object.keys(appState.logs).sort();
+
+      let lastDate = null;
+      let totalCompletions = 0;
+
+      // Find all days where this habit was completed
+      for (let i = allDates.length - 1; i >= 0; i--) {
+        const d = allDates[i];
+        if (appState.logs[d] && (appState.logs[d][habitId] || 0) > 0) {
+          totalCompletions += appState.logs[d][habitId];
+          if (!lastDate) {
+            lastDate = d;
+          }
+        }
+      }
+
+      // Calculate days since
+      let daysSince = null;
+      if (lastDate) {
+        const last = parseDateString(lastDate);
+        const today = parseDateString(todayStr);
+        const diffMs = today - last;
+        daysSince = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        if (daysSince < 0) daysSince = 0;
+      }
+
+      // Calculate current streak
+      let currentStreak = 0;
+      let checkDate = parseDateString(todayStr);
+
+      // If done today, start counting from today. If not done today, check if done yesterday
+      const todayDone = (appState.logs[todayStr] && (appState.logs[todayStr][habitId] || 0) > 0);
+      if (!todayDone) {
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      while (true) {
+        const dStr = getLocalDateString(checkDate);
+        if (appState.logs[dStr] && (appState.logs[dStr][habitId] || 0) > 0) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return {
+        daysSince,
+        currentStreak,
+        totalCompletions
+      };
+    }
+
+    function quickLogHabit(habitId) {
+      const todayStr = getLocalDateString(new Date());
+      if (!appState.logs[todayStr]) appState.logs[todayStr] = {};
+      appState.logs[todayStr][habitId] = 1;
+      saveState();
+      renderAllViews();
+    }
+
+    /* =========================================================
+       VIEW 2: DATA INPUT VIEW (LOGGING & ADDING HABITS)
+       ========================================================= */
+
+    function setupDateSelectors() {
+      document.getElementById('prevLogDateBtn').addEventListener('click', () => shiftLogDate(-1));
+      document.getElementById('nextLogDateBtn').addEventListener('click', () => shiftLogDate(1));
+    }
+
+    function shiftLogDate(days) {
+      const d = parseDateString(currentLogDate);
+      d.setDate(d.getDate() + days);
+      currentLogDate = getLocalDateString(d);
+      renderInputView();
+    }
+
+    function handleAddHabit() {
+      const input = document.getElementById('habitInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      // Check if already exists
+      const exists = appState.habits.some(h => h.name.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        alert(`Habit "${name}" already exists!`);
+        return;
+      }
+
+      const newHabit = {
+        id: 'habit_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        name: name,
+        createdAt: getLocalDateString(new Date())
+      };
+
+      appState.habits.push(newHabit);
+      saveState();
+      input.value = '';
+
+      renderAllViews();
+    }
+
+    function toggleHabitCompletion(habitId) {
+      if (!appState.logs[currentLogDate]) {
+        appState.logs[currentLogDate] = {};
+      }
+
+      const currentCount = appState.logs[currentLogDate][habitId] || 0;
+      if (currentCount > 0) {
+        // Toggle off
+        delete appState.logs[currentLogDate][habitId];
+      } else {
+        // Toggle on
+        appState.logs[currentLogDate][habitId] = 1;
+      }
+
+      saveState();
+      renderAllViews();
+    }
+
+    function renderInputView() {
+      // Date label
+      const todayStr = getLocalDateString(new Date());
+      const logDateLabel = document.getElementById('logDateLabel');
+      const logDateSubtext = document.getElementById('logDateSubtext');
+
+      if (currentLogDate === todayStr) {
+        logDateLabel.textContent = 'Today';
+      } else {
+        const d = parseDateString(currentLogDate);
+        logDateLabel.textContent = d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      }
+      logDateSubtext.textContent = currentLogDate;
+
+      // Render habit buttons
+      const container = document.getElementById('habitTapButtons');
+      container.innerHTML = '';
+
+      if (appState.habits.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state" style="padding: 24px 10px;">
+            <p>No habits configured. Enter a habit name above (e.g. "Exercise") to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      const dateLogs = appState.logs[currentLogDate] || {};
+
+      appState.habits.forEach(habit => {
+        const count = dateLogs[habit.id] || 0;
+        const isDone = count > 0;
+
+        const btn = document.createElement('button');
+        btn.className = `tap-habit-btn ${isDone ? 'completed' : ''}`;
+        btn.onclick = () => toggleHabitCompletion(habit.id);
+
+        btn.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span>${escapeHtml(habit.name)}</span>
+            ${count > 0 ? `<span class="counter-pill">${count}x</span>` : ''}
+          </div>
+          <div class="status-icon">
+            ${isDone ? '✓' : '+'}
+          </div>
+        `;
+
+        container.appendChild(btn);
+      });
+    }
+
+    /* =========================================================
+       VIEW 3: ADMIN / CALENDAR VIEWS (DAY, WEEK, MONTH)
+       ========================================================= */
+
+    let currentAdminSubView = 'day';
+
+    function switchAdminSubView(subview) {
+      currentAdminSubView = subview;
+      document.getElementById('subnavDayBtn').classList.toggle('active', subview === 'day');
+      document.getElementById('subnavWeekBtn').classList.toggle('active', subview === 'week');
+      document.getElementById('subnavMonthBtn').classList.toggle('active', subview === 'month');
+
+      document.getElementById('adminDayView').style.display = subview === 'day' ? 'flex' : 'none';
+      document.getElementById('adminWeekView').style.display = subview === 'week' ? 'flex' : 'none';
+      document.getElementById('adminMonthView').style.display = subview === 'month' ? 'flex' : 'none';
+
+      renderAdminView();
+    }
+
+    function renderAdminView() {
+      if (currentAdminSubView === 'day') renderAdminDay();
+      else if (currentAdminSubView === 'week') renderAdminWeek();
+      else if (currentAdminSubView === 'month') renderAdminMonth();
+    }
+
+    // Day Sub-View
+    function shiftAdminDay(days) {
+      const d = parseDateString(adminDayDate);
+      d.setDate(d.getDate() + days);
+      adminDayDate = getLocalDateString(d);
+      renderAdminDay();
+    }
+
+    function renderAdminDay() {
+      const d = parseDateString(adminDayDate);
+      const titleEl = document.getElementById('adminDayTitle');
+      const summaryEl = document.getElementById('adminDaySummary');
+      const listEl = document.getElementById('adminDayList');
+
+      titleEl.textContent = d.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+
+      if (appState.habits.length === 0) {
+        summaryEl.textContent = 'No habits configured';
+        listEl.innerHTML = `<div class="empty-state">No habits to show.</div>`;
+        return;
+      }
+
+      const dateLogs = appState.logs[adminDayDate] || {};
+      let doneCount = 0;
+
+      listEl.innerHTML = '';
+      appState.habits.forEach(habit => {
+        const count = dateLogs[habit.id] || 0;
+        const isDone = count > 0;
+        if (isDone) doneCount++;
+
+        const item = document.createElement('div');
+        item.className = `day-item ${isDone ? 'done' : 'missed'}`;
+        item.innerHTML = `
+          <div>
+            <strong style="font-size: 15px;">${escapeHtml(habit.name)}</strong>
+            <div style="font-size: 12px; color: var(--text-muted);">
+              ${isDone ? `Exercised / logged ${count} time${count === 1 ? '' : 's'}` : 'Not completed'}
+            </div>
+          </div>
+          <div style="font-size: 18px; font-weight: 700; color: ${isDone ? 'var(--success)' : 'var(--text-muted)'};">
+            ${isDone ? '✓' : '—'}
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+
+      summaryEl.textContent = `${doneCount}/${appState.habits.length} habits completed (${Math.round((doneCount / appState.habits.length) * 100)}%)`;
+    }
+
+    // Week Sub-View
+    function shiftAdminWeek(weeks) {
+      adminWeekStartDate.setDate(adminWeekStartDate.getDate() + (weeks * 7));
+      renderAdminWeek();
+    }
+
+    function renderAdminWeek() {
+      const table = document.getElementById('adminWeekTable');
+      const titleEl = document.getElementById('adminWeekTitle');
+
+      // Generate 7 days of this week
+      const weekDates = [];
+      const tempDate = new Date(adminWeekStartDate);
+      for (let i = 0; i < 7; i++) {
+        weekDates.push(new Date(tempDate));
+        tempDate.setDate(tempDate.getDate() + 1);
+      }
+
+      const startStr = weekDates[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      const endStr = weekDates[6].toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      titleEl.textContent = `${startStr} – ${endStr}`;
+
+      const todayStr = getLocalDateString(new Date());
+
+      // Header row
+      let headerHtml = `
+        <thead>
+          <tr>
+            <th style="text-align: left; padding-left: 8px;">Habit</th>
+            ${weekDates.map(d => {
+              const dStr = getLocalDateString(d);
+              const isToday = (dStr === todayStr);
+              return `
+                <th class="${isToday ? 'today-col' : ''}">
+                  <div>${d.toLocaleDateString(undefined, { weekday: 'narrow' })}</div>
+                  <div style="font-size: 11px;">${d.getDate()}</div>
+                </th>
+              `;
+            }).join('')}
+            <th>Rate</th>
+          </tr>
+        </thead>
+      `;
+
+      // Body rows
+      let bodyHtml = '<tbody>';
+      if (appState.habits.length === 0) {
+        bodyHtml += `<tr><td colspan="9" style="padding: 24px; color: var(--text-muted);">No habits added yet.</td></tr>`;
+      } else {
+        appState.habits.forEach(habit => {
+          let habitWeekDone = 0;
+          const cells = weekDates.map(d => {
+            const dStr = getLocalDateString(d);
+            const done = (appState.logs[dStr] && (appState.logs[dStr][habit.id] || 0) > 0);
+            if (done) habitWeekDone++;
+            return `
+              <td>
+                ${done ? '<span class="week-check">✓</span>' : '<span class="week-dash">—</span>'}
+              </td>
+            `;
+          }).join('');
+
+          const compliance = Math.round((habitWeekDone / 7) * 100);
+
+          bodyHtml += `
+            <tr>
+              <td class="habit-name-col">${escapeHtml(habit.name)}</td>
+              ${cells}
+              <td style="font-weight: 600; color: ${compliance >= 70 ? 'var(--success)' : 'var(--text-muted)'};">
+                ${habitWeekDone}/7
+              </td>
+            </tr>
+          `;
+        });
+      }
+      bodyHtml += '</tbody>';
+
+      table.innerHTML = headerHtml + bodyHtml;
+    }
+
+    // Month Sub-View
+    function shiftAdminMonth(months) {
+      adminMonthDate.setMonth(adminMonthDate.getMonth() + months);
+      renderAdminMonth();
+    }
+
+    function renderAdminMonth() {
+      const grid = document.getElementById('adminMonthGrid');
+      const titleEl = document.getElementById('adminMonthTitle');
+
+      const year = adminMonthDate.getFullYear();
+      const month = adminMonthDate.getMonth();
+
+      titleEl.textContent = adminMonthDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+      // First day of month & total days
+      const firstDay = new Date(year, month, 1).getDay(); // 0 is Sunday
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+
+      const todayStr = getLocalDateString(new Date());
+
+      grid.innerHTML = '';
+
+      // Leading padding cells from previous month
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const cell = document.createElement('div');
+        cell.className = 'month-day-cell other-month';
+        cell.innerHTML = `<span>${prevMonthDays - i}</span>`;
+        grid.appendChild(cell);
+      }
+
+      // Actual month days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const mDate = new Date(year, month, day);
+        const dateStr = getLocalDateString(mDate);
+        const dayLogs = appState.logs[dateStr] || {};
+
+        let completedCount = 0;
+        appState.habits.forEach(h => {
+          if ((dayLogs[h.id] || 0) > 0) completedCount++;
+        });
+
+        const isToday = (dateStr === todayStr);
+        const hasCompletions = completedCount > 0;
+        const allCompleted = (appState.habits.length > 0 && completedCount === appState.habits.length);
+
+        const cell = document.createElement('div');
+        cell.className = `month-day-cell ${isToday ? 'is-today' : ''} ${allCompleted ? 'all-completed' : (hasCompletions ? 'has-completions' : '')}`;
+        cell.onclick = () => {
+          adminDayDate = dateStr;
+          switchAdminSubView('day');
+        };
+
+        let dotsHtml = '';
+        if (completedCount > 0) {
+          const dotsToShow = Math.min(completedCount, 4);
+          dotsHtml = '<div class="day-dots-container">' + 
+            Array(dotsToShow).fill('<div class="day-dot"></div>').join('') + 
+            '</div>';
+        }
+
+        cell.innerHTML = `
+          <span style="font-weight: ${isToday ? '700' : '500'};">${day}</span>
+          ${dotsHtml}
+        `;
+
+        grid.appendChild(cell);
+      }
+    }
+
+    /* =========================================================
+       NAVIGATION CONTROLLER
+       ========================================================= */
+
+    function switchMainTab(tab) {
+      document.getElementById('overviewView').classList.toggle('active', tab === 'overview');
+      document.getElementById('inputView').classList.toggle('active', tab === 'input');
+      document.getElementById('adminView').classList.toggle('active', tab === 'admin');
+
+      document.getElementById('tabOverview').classList.toggle('active', tab === 'overview');
+      document.getElementById('tabInput').classList.toggle('active', tab === 'input');
+      document.getElementById('tabAdmin').classList.toggle('active', tab === 'admin');
+
+      // Refresh view when opened
+      if (tab === 'overview') renderOverviewView();
+      if (tab === 'input') renderInputView();
+      if (tab === 'admin') renderAdminView();
+    }
+
+    /* =========================================================
+       SETTINGS, EXPORT & IMPORT (PHONE <-> PC SYNC)
+       ========================================================= */
+
+    document.getElementById('openSettingsBtn').onclick = () => {
+      document.getElementById('settingsModal').classList.add('active');
+    };
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `habitpulse_backup_${getLocalDateString(new Date())}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (imported && Array.isArray(imported.habits) && imported.logs) {
+            appState = imported;
+            saveState();
+            renderAllViews();
+            alert('Backup successfully imported!');
+            closeSettingsModal();
+          } else {
+            alert('Invalid backup file format.');
+          }
+        } catch (err) {
+          alert('Error parsing backup file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function loadSampleData() {
+      if (confirm('Load sample demonstration habits and history?')) {
+        const today = new Date();
+        const d0 = getLocalDateString(today);
+
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const d1 = getLocalDateString(yesterday);
+
+        const dayBefore = new Date(today);
+        dayBefore.setDate(dayBefore.getDate() - 2);
+        const d2 = getLocalDateString(dayBefore);
+
+        appState = {
+          habits: [
+            { id: 'habit_exercise', name: 'Exercise', createdAt: d2 },
+            { id: 'habit_reading', name: 'Reading 20 mins', createdAt: d2 },
+            { id: 'habit_water', name: 'Drink 2L Water', createdAt: d2 }
+          ],
+          logs: {
+            [d2]: { 'habit_exercise': 1, 'habit_water': 1 },
+            [d1]: { 'habit_exercise': 1, 'habit_reading': 1, 'habit_water': 1 },
+            [d0]: { 'habit_exercise': 1 }
+          }
+        };
+
+        saveState();
+        renderAllViews();
+        closeSettingsModal();
+      }
+    }
+
+    function clearAllData() {
+      if (confirm('Are you sure you want to reset all habits and tracking records? This cannot be undone.')) {
+        appState = { habits: [], logs: {} };
+        saveState();
+        renderAllViews();
+        closeSettingsModal();
+      }
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+  </script>
+</body>
+</html>
